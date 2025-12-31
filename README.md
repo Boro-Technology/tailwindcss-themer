@@ -2,6 +2,8 @@
 
 An unopinionated, scalable, [tailwindcss](https://tailwindcss.com/) theming solution
 
+> **Note**: This plugin now supports Tailwind CSS v4.0+. For Tailwind CSS v3.x, please use an earlier version of this plugin.
+
 [![current version](https://img.shields.io/npm/v/tailwindcss-themer.svg)](https://www.npmjs.com/package/tailwindcss-themer)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
@@ -197,7 +199,8 @@ See [Variants](#variants) for more details.
 
 ## Migration documentation
 
-See [migrating.md](./docs/migrating.md) for instructions on how to migrate between major versions.
+- [Migrating between plugin versions](./docs/migrating.md) - Instructions on how to migrate between major versions of this plugin
+- [Migrating to Tailwind CSS v4](./docs/migrating-to-v4.md) - Guide for using this plugin with Tailwind CSS v4
 
 ## Enabling your theme
 
@@ -697,6 +700,7 @@ If you've opted to use a prefix in your Tailwind CSS setup, it's essential to in
   </body>
 </html>
 ```
+
 ### Naming
 
 As you probably could tell from above, the names of the generated css variables are the [kebab-cased](https://www.theserverside.com/definition/Kebab-case) version of the variable's path on the config object.

@@ -10,7 +10,6 @@ describe('multiThemePlugin', () => {
 
   beforeEach(() => {
     api = mock<PluginAPI>({
-      e: vi.fn(x => `escaped-${x}`),
       theme: vi.fn(x => x) as PluginAPI['theme']
     })
   })
@@ -65,27 +64,28 @@ describe('multiThemePlugin', () => {
         ]
       }
 
-      multiThemePlugin(config).handler(api)
+      const pluginResult = multiThemePlugin(config)
+      pluginResult.handler(api)
 
       expect(api.addVariant).toHaveBeenCalledWith('defaultTheme', [
-        '.escaped-defaultTheme &',
-        '&.escaped-defaultTheme'
+        '.defaultTheme &',
+        '&.defaultTheme'
       ])
       expect(api.addVariant).toHaveBeenCalledWith('darkTheme', [
-        '.escaped-darkTheme &',
-        '&.escaped-darkTheme'
+        '.darkTheme &',
+        '&.darkTheme'
       ])
       expect(api.addVariant).not.toHaveBeenCalledWith('light', [
-        '.escaped-light &',
-        '&.escaped-light'
+        '.light &',
+        '&.light'
       ])
       expect(api.addVariant).not.toHaveBeenCalledWith('neon', [
-        '.escaped-neon &',
-        '&.escaped-neon'
+        '.neon &',
+        '&.neon'
       ])
       expect(api.addVariant).not.toHaveBeenCalledWith('soft', [
-        '.escaped-soft &',
-        '&.escaped-soft'
+        '.soft &',
+        '&.soft'
       ])
     })
 
@@ -128,7 +128,8 @@ describe('multiThemePlugin', () => {
         ]
       }
 
-      multiThemePlugin(config).handler(api)
+      const pluginResult = multiThemePlugin(config)
+      pluginResult.handler(api)
 
       expect(api.addVariant).toHaveBeenCalledWith('darkTheme', [
         '.dark-mode &',
@@ -143,8 +144,8 @@ describe('multiThemePlugin', () => {
         '&[data-theme="high-contrast"]'
       ])
       expect(api.addVariant).toHaveBeenCalledWith('soft', [
-        '.escaped-soft &',
-        '&.escaped-soft'
+        '.soft &',
+        '&.soft'
       ])
     })
 
@@ -188,7 +189,8 @@ describe('multiThemePlugin', () => {
         ]
       }
 
-      multiThemePlugin(config).handler(api)
+      const pluginResult = multiThemePlugin(config)
+      pluginResult.handler(api)
 
       expect(api.addVariant).not.toHaveBeenCalledWith('soft', expect.anything())
     })
@@ -215,7 +217,8 @@ describe('multiThemePlugin', () => {
         ]
       }
 
-      multiThemePlugin(config).handler(api)
+      const pluginResult = multiThemePlugin(config)
+      pluginResult.handler(api)
 
       expect(api.addVariant).toHaveBeenCalledWith(
         'darkTheme',
@@ -261,7 +264,8 @@ describe('multiThemePlugin', () => {
           }
         ]
       }
-      multiThemePlugin(config).handler(api)
+      const pluginResult = multiThemePlugin(config)
+      pluginResult.handler(api)
 
       expect(api.addBase).toHaveBeenCalledWith({
         ':root': {
@@ -270,7 +274,7 @@ describe('multiThemePlugin', () => {
       })
       for (const theme of config.themes ?? []) {
         expect(api.addBase).toHaveBeenCalledWith({
-          [`.escaped-${theme.name}`]: {
+          [`.${theme.name}`]: {
             '--colors-primary': 'another',
             '--colors-secondary': 'something',
             '--spacing-0\\.5': '10px'
@@ -310,7 +314,8 @@ describe('multiThemePlugin', () => {
         ]
       }
 
-      multiThemePlugin(config).handler(api)
+      const pluginResult = multiThemePlugin(config)
+      pluginResult.handler(api)
 
       expect(api.addBase).toHaveBeenCalledWith({
         '.dark-mode, [data-theme="dark"]': {
@@ -346,7 +351,8 @@ describe('multiThemePlugin', () => {
         ]
       }
 
-      multiThemePlugin(config).handler(api)
+      const pluginResult = multiThemePlugin(config)
+      pluginResult.handler(api)
 
       expect(api.addBase).toHaveBeenCalledWith({
         ':root': {
@@ -379,7 +385,8 @@ describe('multiThemePlugin', () => {
         ]
       }
 
-      multiThemePlugin(config).handler(api)
+      const pluginResult = multiThemePlugin(config)
+      pluginResult.handler(api)
 
       expect(api.addBase).toHaveBeenCalledWith({
         '@media (prefers-color-scheme: dark)': {
@@ -412,7 +419,8 @@ describe('multiThemePlugin', () => {
         ]
       }
 
-      multiThemePlugin(config).handler(api)
+      const pluginResult = multiThemePlugin(config)
+      pluginResult.handler(api)
 
       expect(api.addBase).not.toHaveBeenCalledWith({
         '@media (prefers-color-scheme: dark)': expect.anything()
@@ -422,28 +430,30 @@ describe('multiThemePlugin', () => {
 
   describe('config', () => {
     it('extends the theme', () => {
-      expect(
-        multiThemePlugin({
-          defaultTheme: {
+      const pluginResult = multiThemePlugin({
+        defaultTheme: {
+          extend: {
+            colors: {
+              primary: 'thing'
+            }
+          }
+        },
+        themes: [
+          {
+            name: 'dark',
             extend: {
               colors: {
-                primary: 'thing'
+                primary: 'another',
+                secondary: 'something'
               }
             }
-          },
-          themes: [
-            {
-              name: 'dark',
-              extend: {
-                colors: {
-                  primary: 'another',
-                  secondary: 'something'
-                }
-              }
-            }
-          ]
-        }).config
-      ).toEqual({
+          }
+        ]
+      })
+      // In Tailwind 4, the config is passed as second argument to plugin()
+      // The plugin returns an object with handler and config properties
+      expect(pluginResult).toBeDefined()
+      expect(pluginResult.config).toEqual({
         theme: {
           extend: {
             colors: {

@@ -11,6 +11,7 @@ import {
   resolveThemeExtensionsAsTailwindExtension,
   resolveThemeExtensionAsCustomProps
 } from './utils/themeUtils'
+import { escape } from './utils/customPropUtils'
 
 const defaultOptions: MultiThemePluginOptions = {
   defaultTheme: { extend: {} },
@@ -25,13 +26,13 @@ const defaultOptions: MultiThemePluginOptions = {
  */
 const addThemeVariants = (
   themes: ThemeConfig[],
-  { addVariant, e }: PluginAPI
+  { addVariant }: PluginAPI
 ) => {
   for (const { name, selectors: _selectors, mediaQuery } of themes) {
     const variantName = name === defaultThemeName ? 'defaultTheme' : name
     const shouldAddNameBasedVariant = !_selectors && !mediaQuery
     const selectors =
-      _selectors ?? (shouldAddNameBasedVariant ? [`.${e(variantName)}`] : [])
+      _selectors ?? (shouldAddNameBasedVariant ? [`.${escape(variantName)}`] : [])
 
     if (selectors.length > 0) {
       addVariant(
@@ -51,7 +52,7 @@ const addThemeVariants = (
  * @param api the tailwind plugin helpers
  */
 const addThemeStyles = (themes: ThemeConfig[], api: PluginAPI): void => {
-  const { addBase, e } = api
+  const { addBase } = api
   for (const { name, selectors: _selectors, extend, mediaQuery } of themes) {
     const selectors =
       _selectors ??
@@ -59,7 +60,7 @@ const addThemeStyles = (themes: ThemeConfig[], api: PluginAPI): void => {
         ? [':root']
         : mediaQuery
           ? []
-          : [`.${e(name)}`])
+          : [`.${escape(name)}`])
     if (selectors.length > 0) {
       addBase({
         [selectors.join(', ')]: resolveThemeExtensionAsCustomProps(extend, api)
@@ -75,23 +76,23 @@ const addThemeStyles = (themes: ThemeConfig[], api: PluginAPI): void => {
   }
 }
 
-const multiThemePlugin = plugin.withOptions<MultiThemePluginOptions>(
-  (options = defaultOptions) =>
-    api => {
-      const themes = getThemesFromOptions(options)
+function multiThemePlugin(
+  options: MultiThemePluginOptions = defaultOptions
+) {
+  const themes = getThemesFromOptions(options)
+  const extension = resolveThemeExtensionsAsTailwindExtension(themes)
+
+  return plugin(
+    (api) => {
       addThemeVariants(themes, api)
       addThemeStyles(themes, api)
     },
-  (options = defaultOptions) => {
-    const extension = resolveThemeExtensionsAsTailwindExtension(
-      getThemesFromOptions(options)
-    )
-    return {
+    {
       theme: {
         extend: extension
       }
     }
-  }
-)
+  )
+}
 
 export = multiThemePlugin
